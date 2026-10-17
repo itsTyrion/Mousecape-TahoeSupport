@@ -1,0 +1,35 @@
+name: Build Mousecape
+
+on:
+  workflow_dispatch: # manual trigger from Actions tab
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build App
+        run: |
+          xcodebuild -project Mousecape.xcodeproj \
+                     -scheme Mousecape \
+                     -configuration Release \
+                     -arch x86_64 \
+                     -arch arm64 \
+                     derivedDataPath build \
+                     CODE_SIGN_IDENTITY="" \
+                     CODE_SIGNING_REQUIRED=NO \
+                     CODE_SIGNING_ALLOWED=NO
+
+      - name: Zip Build Output
+        run: |
+          cd build/Build/Products/Release
+          zip -r Mousecape.zip Mousecape.app
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mousecape-Universal
+          path: build/Build/Products/Release/Mousecape.zip
